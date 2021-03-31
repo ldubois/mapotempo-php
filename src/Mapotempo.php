@@ -24,12 +24,13 @@ class Mapotempo
     private $version = "0.1";
 
     /** @var string */
-    private $table ;
+    private $table;
 
     public function __construct(string $url, string $apiKey, int $timeout = 10)
     {
         // @see https://github.com/kriswallsmith/Buzz/pull/186
-        $listener = new CallbackListener(function (RequestInterface $request, $response = null)  {});
+        $listener = new CallbackListener(function (RequestInterface $request, $response = null) {
+        });
 
         $this->browser = new Buzz\Browser(new Buzz\Client\Curl());
         $this->browser->addListener($listener);
@@ -50,15 +51,16 @@ class Mapotempo
 
     public function createRecord(string $table, array $fields): void
     {
+
         /** @var Response $response */
         $response = $this->browser->post(
             $this->getEndpoint($table),
             [
                 'content-type' => 'application/json',
             ],
-            json_encode([
-                'fields' => $fields,
-            ])
+            json_encode(
+                $fields
+            )
         );
 
         $this->guardResponse($table, $response);
@@ -115,7 +117,7 @@ class Mapotempo
     {
 
         /** @var Response $response */
-        $response = $this->browser->patch(
+        $response = $this->browser->put(
             $this->getEndpoint($table, $id),
             [
                 'content-type' => 'application/json',
@@ -186,7 +188,7 @@ class Mapotempo
         }
     }
 
-    public function getRecord( string $id): Record
+    public function getRecord(string $table, string $id): Record
     {
         $url = $this->getEndpoint($this->table, $id);
 
@@ -200,15 +202,16 @@ class Mapotempo
 
         $data = json_decode($response->getContent(), true);
 
-        if (empty($data['id']) || empty($data['fields'])) {
-            throw new \RuntimeException(sprintf("No records have been found from '%s:%s:%s'.", $this->base, $table, $id));
+        if (empty($data['id'])) {
+            throw new \RuntimeException(sprintf("No records have been found from '%s:%s'.", $table, $id));
         }
 
-        return new Record($data['id'], $data['fields']);
+        return new Record($data['id'], $data);
     }
 
     public function findRecord(string $table, array $criteria): ?Record
     {
+
         $records = $this->findRecords($table, $criteria);
 
         if (count($records) > 1) {
@@ -254,11 +257,12 @@ class Mapotempo
                 $formulas[] = sprintf("%s:%s", $field, $value);
             }
 
-            $url .= sprintf(
+            $url .= trim(sprintf(
                 '&ids=%s',
                 implode(',', $formulas)
-            );
+            ));
         }
+
 
         if ($withExtraProperties) {
             $url .= "&with_extra_properties=true";
@@ -276,14 +280,19 @@ class Mapotempo
             return [];
         }
 
+        $result = array_map(function (array $value) {
+            return new Record($value['id'], $value);
+        }, $data);
 
-        return $data;
+
+
+        return  $result;
     }
 
     protected function getEndpoint(string $table, ?string $id = null): string
     {
         if ($id) {
-            $urlPattern = $this->url . '/api/' . $this->version . '/%TABLE%.json/%ID%?api_key=%APIKEY%';
+            $urlPattern = $this->url . '/api/' . $this->version . '/%TABLE%/%ID%?api_key=%APIKEY%';
 
             return strtr($urlPattern, [
                 '%APIKEY%' => $this->apiKey,
@@ -292,7 +301,7 @@ class Mapotempo
             ]);
         }
 
-        $urlPattern = $this->url . '/api/' . $this->version . '/%TABLE%.json?api_key=%APIKEY%';
+        $urlPattern = $this->url . '/api/' . $this->version . '/%TABLE%?api_key=%APIKEY%';
 
         return strtr($urlPattern, [
             '%APIKEY%' => $this->apiKey,
@@ -306,12 +315,22 @@ class Mapotempo
             throw new \RuntimeException(sprintf('Rate limit reach on "%s:%s".', $this->base, $table));
         }
 
-        if (200 !== $response->getStatusCode()) {
-            $content = json_decode($response->getContent(), true);
-            $message = $content['error']['message'] ?? 'No details';
+        switch ($response->getStatusCode()) {
+            case 200:
+            case 201://création réussi
+                break;
+            default:
+                $content = json_decode($response->getContent(), true);
 
-            throw new \RuntimeException(sprintf('An "%s" error occurred when trying to create record on "%s:%s" : %s', $response->getStatusCode(), $this->base, $table, $message));
+                if (isset($content['message'])) {
+                    $message = $content['message'] ?? 'No details';
+                } else {
+                    $message = $content['error'][0] ?? 'No details';
+                }
+
+                throw new \RuntimeException(sprintf('An "%s" error occurred when trying to create record on "%s" : %s', $response->getStatusCode(), $table, $message));
+        }
+        if (200 !== $response->getStatusCode()) {
         }
     }
-
 }
