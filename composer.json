@@ -1,0 +1,24 @@
+{
+    "name": "ldubois/php-mapotempo",
+    "type": "library",
+    "description": "Manipulate Mapotempo API using PHP",
+    "keywords": ["php", "mapotempo", "sdk","api"],
+    "homepage": "https://github.com/ldubois/php-mapotempo",
+    "require": {
+        "ext-json": "*",
+        "php": ">=7.1",
+        "kriswallsmith/buzz": "^0.15.0",
+        "beberlei/assert": "~2.1"
+    },
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Ldubois\\Mapotempo\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Ludovic DUBOIS"
+        }
+    ]
+}
