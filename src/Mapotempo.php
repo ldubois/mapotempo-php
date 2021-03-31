@@ -133,7 +133,7 @@ class Mapotempo
      *
      * @throws \Assert\AssertionFailedException
      */
-    public function updateRecords(string $table, array $data): void
+    public function createOrUpdateRecords(string $table, array $data): void
     {
         /** @var Response $response */
         $response = $this->browser->put(

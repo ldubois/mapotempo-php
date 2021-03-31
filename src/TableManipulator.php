@@ -29,9 +29,9 @@ class TableManipulator
         $this->client->updateRecord($this->table, $criteria, $fields);
     }
 
-    public function updateRecords( array $data): void
+    public function createOrUpdateRecords( array $data): void
     {
-        $this->client->updateRecords($this->table, $data);
+        $this->client->createOrUpdateRecords($this->table, $data);
     }
 
     public function updateRecordById(string $id,array $fields): void
