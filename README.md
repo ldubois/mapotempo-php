@@ -15,6 +15,7 @@ composer require ldubois/php-mapotempo
 ```php
 $apikey   = "API_KEY"; // Your Api key
 $url  = "URL"; // Your url application mapotempo
+$table ="TABLE"; // A table to interact
 
 $mapotempo = new Mapotempo($url, $apikey);
 

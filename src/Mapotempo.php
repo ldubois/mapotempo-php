@@ -26,7 +26,7 @@ class Mapotempo
     /** @var string */
     private $table ;
 
-    public function __construct(string $url, string $apiKey, string $table, int $timeout = 10)
+    public function __construct(string $url, string $apiKey, int $timeout = 10)
     {
         // @see https://github.com/kriswallsmith/Buzz/pull/186
         $listener = new CallbackListener(function (RequestInterface $request, $response = null)  {});
@@ -41,7 +41,6 @@ class Mapotempo
 
         $this->url = $url;
         $this->apiKey = $apiKey;
-        $this->table = $table;
     }
 
     public function createTableManipulator(string $table): TableManipulator
