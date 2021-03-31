@@ -107,9 +107,8 @@ class Mapotempo
     }
 
     /**
-     * This will update some (but not all) fields of a table record,
-     *  issuing a PATCH request to the record endpoint.
-     *  Any fields that are not included will not be updated.
+     * This will update some fields of a table record,
+     *  issuing a PUT request to the record endpoint.
      *
      * @throws \Assert\AssertionFailedException
      */
@@ -122,9 +121,27 @@ class Mapotempo
             [
                 'content-type' => 'application/json',
             ],
-            json_encode([
-                'fields' => $fields,
-            ])
+            json_encode($fields)
+        );
+
+        $this->guardResponse($table, $response);
+    }
+
+     /**
+     * This will update all fields of a table record,
+     *  issuing a PUT request to the record endpoint.
+     *
+     * @throws \Assert\AssertionFailedException
+     */
+    public function updateRecords(string $table, array $data): void
+    {
+        /** @var Response $response */
+        $response = $this->browser->put(
+            $this->getEndpoint($table),
+            [
+                'content-type' => 'application/json',
+            ],
+            "{\"".$table.'":'.json_encode($data)."}"
         );
 
         $this->guardResponse($table, $response);
